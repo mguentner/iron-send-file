@@ -4,10 +4,7 @@
 
 #[macro_use]
 extern crate iron;
-#[macro_use]
-extern crate lazy_static;
 extern crate hyper;
-extern crate conduit_mime_types as mime_types;
 extern crate http_range;
 
 use std::str;
@@ -17,19 +14,20 @@ use std::path::Path;
 use iron::{IronResult, Request, Response, Set};
 use iron::status;
 use iron::headers;
-use hyper::mime::Mime;
+use iron::mime::Mime;
 use http_range::{HttpRange, HttpRangeParseError};
 
-lazy_static! {
-    static ref MIME_TYPES: mime_types::Types = mime_types::Types::new().unwrap();
-}
-
-/// Send file
+/// send_file
 ///
-/// Request is needed for `Range` header.
-/// Response parameter allows setting custom headers for response.
-/// Path is path of the file to be served.
-pub fn send_file(req: &Request, mut res: Response, path: &Path) -> IronResult<Response> {
+/// Arguments:
+/// * `req` - the Request
+/// * `res` - the Response
+/// * `path` - the Path of the file to be served.
+/// * `mime` - the Mime of `path`
+///
+/// Returns the updated Response
+
+pub fn send_file(req: &Request, mut res: Response, path: &Path, mime: Mime) -> IronResult<Response> {
     let mut file = itry!(File::open(path), (status::NotFound, "Not Found"));
     let size = itry!(file.metadata(),
                      (status::InternalServerError, "Internal server error"))
@@ -66,12 +64,11 @@ pub fn send_file(req: &Request, mut res: Response, path: &Path) -> IronResult<Re
         None => None,
     };
 
-    let mime_str = MIME_TYPES.mime_for_path(path);
-    let _ = mime_str.parse().map(|mime: Mime| res.set_mut(mime));
-
     match range {
         Some(range) => {
             res.status = Some(status::PartialContent);
+
+            res.headers.set(headers::ContentType(mime));
 
             res.headers.set(headers::ContentLength(range.length));
 
@@ -88,6 +85,8 @@ pub fn send_file(req: &Request, mut res: Response, path: &Path) -> IronResult<Re
         }
         None => {
             res.status = Some(status::Ok);
+
+            res.headers.set(headers::ContentType(mime));
 
             res.headers.set(headers::ContentLength(size));
 
