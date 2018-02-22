@@ -1,16 +1,15 @@
 [package]
 name = "iron-send-file"
-version = "0.1.1"
-authors = ["Luka Zakrajšek <luka@bancek.net>"]
-repository = "https://github.com/bancek/iron-send-file.git"
+version = "0.2.0"
+authors = [ "Maximilian Güntner <code@sourcediver.org>", "Luka Zakrajšek <luka@bancek.net>"]
+repository = "https://github.com/mguentner/iron-send-file.git"
 documentation = "https://docs.rs/iron-send-file/0.1.1/iron_send_file/"
 description = "Serve files with Range header support for Iron library."
 readme = "README.md"
 license = "MIT"
 
 [dependencies]
-iron = "0.4.0"
-hyper = "0.9.10"
-conduit-mime-types = "0.7.3"
+iron = "0.6.0"
+hyper = "0.11.15"
 lazy_static = "0.2.1"
 http-range = "0.1.1"
